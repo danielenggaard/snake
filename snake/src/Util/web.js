@@ -6,8 +6,9 @@ export async function get(route, callback) {
     const url = apiBaseUrl + route;
     http.open("GET", url)
     await http.send();
-    const fun = http.onreadystatechange = _ => callback(http.response);
-    
-    return fun();
+    http.onreadystatechange = _ => {
+        if (http.readyState === 4 && http.status === 200)
+        callback(JSON.parse(http.responseText));  
+    }  
 }
 

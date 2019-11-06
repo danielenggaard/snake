@@ -15,16 +15,21 @@ export default class SignalR extends Component {
 
 
     componentDidMount() {
-         const protocol = new signalR.JsonHubProtocol();
+        //  const protocol = new signalR.JsonHubProtocol();
 
-         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:5001/game")
-            .withHubProtocol(protocol)
-            .configureLogging(signalR.LogLevel.Information)
-            .build();
+        //  const connection = new signalR.HubConnectionBuilder()
+        //     .withUrl("https://localhost:5001/game")
+        //     .withHubProtocol(protocol)
+        //     .configureLogging(signalR.LogLevel.Information)
+        //     .build();
+
+        // this.connection = connection;
+        // this.setState({ connection });
         
-        this.connection.on('sendMessageHi', this.onNotifyReceived);
-        this.connection.start().then(_ => console.log("Connected!")).catch(err => console.log("Error: ", err));
+        // connection.on('sendMessageHi', this.onNotifyReceived);
+        // connection.start()
+        //     .then(_ => console.log("Established connection."))
+        //     .catch(err => console.log("Establishing connection to server failed.")));
     }
 
     onNotifyReceived(res) {
