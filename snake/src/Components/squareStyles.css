@@ -1,0 +1,12 @@
+.square_unvisited {
+    background-color: "rgb(230, 230, 230";
+}
+
+.square_food {
+    background-color: red
+}
+
+.square_path {
+    background-color: black
+}
+
