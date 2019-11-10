@@ -3,6 +3,8 @@ import { get } from "../Util/web";
 import { states, hubPath, className } from "../Constants/constants";
 import * as signalR from '@microsoft/signalr';
 import "./squareStyles.css";
+import Appbar from './AppBar';
+import GridContiner from './GridContainer';
 export default class Map extends Component {
 
     constructor(props) {
@@ -13,16 +15,19 @@ export default class Map extends Component {
             rows: 30,
             columns: 30
         }
+        this.bindMethods();
     }
 
     bindMethods() {
         this.beginCountdown = this.beginCountdown.bind(this);
+        this.startGame = this.startGame.bind(this);
     }
 
     componentDidMount() {
         this.setBoard();
         this.initNegotiation();
         this.initBoard();
+        document.addEventListener("keydown", this.changeDirection);
     }
 
     createArea(row, column) {
@@ -33,16 +38,20 @@ export default class Map extends Component {
         }
     }
 
-    initBoard() {
+    clearBoard() {
         const { rows, columns } = this.state;
         const map = [];
         for (let row = 0; row < rows; row++) {
             map[row] = [];
             for (let column = 0; column < columns; column++)
                 map[row][column] = this.createArea(row, column);
-            
         }
-        this.setState({ map, mapDidInit: true });
+        this.setState({ map });
+    }
+
+    initBoard() {
+        this.clearBoard()
+        this.setState({ mapDidInit: true });
     }
 
     renderColumn(row) {
@@ -51,11 +60,10 @@ export default class Map extends Component {
 
         map[row].forEach(square => {
             columns.push(
-                <td style={{ 
-                    border: "1px solid black", 
-                }} 
-                className={className[square.state]}
-                key={`${row}_${square.column}`}></td>
+                <td
+                    className={"square " + className[square.state]}
+                    key={`${row}_${square.column}`}
+                ></td>
             )
         });
 
@@ -78,10 +86,6 @@ export default class Map extends Component {
         connection.on('beginCountDown', countDown => this.beginCountdown(countDown));
         connection.on('updateSnake', e => this.updateSnakePosition(e));
         connection.start()
-            .then(_ => {
-                console.log("Connection established.");
-                // connection.invoke('BeginCountDown');
-            })
             .catch(err => console.log("Establishing connection to server failed."));
     }
 
@@ -109,7 +113,11 @@ export default class Map extends Component {
 
     setBoard = async _ => await get("init", obj => 
         this.setState({ rows: obj.rows, columns: obj.columns }));
-        
+
+    changeDirection = e => {
+         this.state.connection.invoke('ChangeDirection', e.key);
+    }
+    
     
 
     updateSnakePosition(obj) {
@@ -124,29 +132,36 @@ export default class Map extends Component {
         this.setState({ map, lastSquare: body[body.length - 1] });
         
     }
-    
-    renderStartButton() {
-        const { connection, connectionDidInit, mapDidInit } = this.state;
-        if (connectionDidInit && mapDidInit)
-            return <button onClick={() =>  connection.invoke('StartGame')}>Start</button>
-        return <button>Start</button>
-    }
 
+    startGame() {
+        const { connection, connectionDidInit, mapDidInit } = this.state;
+        if (connection && connectionDidInit && mapDidInit) {
+            this.clearBoard();
+            connection.invoke('StartGame');
+        }
+    }
+    
     render() {
 
         
         return <React.Fragment>
             
+        <Appbar 
+            startGame={this.startGame}
+        />
+
+        <GridContiner>  
             <table
-            style={{
-               width: '100%',
-                height: '500px'
-            }}>
-            <tbody>
-                {this.renderRows()}
-            </tbody>
-        </table>
-        {this.renderStartButton()}
+                id="bob"
+                style={{
+                    width: '90vh',
+                    height: '90vh'
+                }}>
+                <tbody>
+                    {this.renderRows()}
+                </tbody>
+            </table>
+        </GridContiner>
 
         </React.Fragment>
     }
