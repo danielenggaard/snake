@@ -8,10 +8,4 @@ export const states = {
     PATH: 3
 }
 
-export const className = {
-    [states.UNVISITED]: "square_unvisited",
-    [states.FOOD] : "square_food",
-    [states.PATH] : "square_path"
-}
-
 
