@@ -118,11 +118,19 @@ export default class Map extends Component {
          this.state.connection.invoke('ChangeDirection', e.key);
     }
     
-    
+    snakeAteFood(obj) {
+        const { map } = this.state;
+
+    }
 
     updateSnakePosition(obj) {
         const { map, lastSquare } = this.state;
         const body = obj.snake;
+        const food = obj.food;
+        food.forEach(food => {
+            map[food.row][food.column].state = states.FOOD;
+        });
+
         if (lastSquare)
             map[lastSquare.row][lastSquare.column].state = states.UNVISITED;
 
