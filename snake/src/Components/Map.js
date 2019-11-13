@@ -5,6 +5,7 @@ import * as signalR from '@microsoft/signalr';
 import "./squareStyles.css";
 import Appbar from './AppBar';
 import GridContiner from './GridContainer';
+import { Typography } from '@material-ui/core';
 export default class Map extends Component {
 
     constructor(props) {
@@ -12,8 +13,9 @@ export default class Map extends Component {
 
         this.state = {
             map: [],
-            rows: 30,
-            columns: 30
+            rows: 0,
+            columns: 0,
+            score: 0
         }
         this.bindMethods();
     }
@@ -21,12 +23,12 @@ export default class Map extends Component {
     bindMethods() {
         this.beginCountdown = this.beginCountdown.bind(this);
         this.startGame = this.startGame.bind(this);
+        this.onGameOver = this.onGameOver.bind(this);
     }
 
     componentDidMount() {
         this.setBoard();
         this.initNegotiation();
-        this.initBoard();
         document.addEventListener("keydown", this.changeDirection);
     }
 
@@ -37,6 +39,9 @@ export default class Map extends Component {
             state: states.UNVISITED
         }
     }
+
+    updateScore = obj => this.setState({ score: parseInt(obj.score) });
+    
 
     clearBoard() {
         const { rows, columns } = this.state;
@@ -85,6 +90,8 @@ export default class Map extends Component {
     setConnectionListeners(connection) {
         connection.on('beginCountDown', countDown => this.beginCountdown(countDown));
         connection.on('updateSnake', e => this.updateSnakePosition(e));
+        connection.on('updateScore', obj => this.updateScore(obj));
+        connection.on('gameOver', () => this.onGameOver())
         connection.start()
             .catch(err => console.log("Establishing connection to server failed."));
     }
@@ -99,29 +106,27 @@ export default class Map extends Component {
     }
 
     beginCountdown(milliseconds) {
-
-        // this.setState({ countdownIsOn: true }, () => {
-        //     for (let i = milliseconds / 1_000; i >= 0; i--) {
-        //         this.setState({ currentCountDown:  i});
-        //         setTimeout(() => {}, 1_000);
-        //     }
-        // })
-        console.warn("Beginning countdown on 1 second. Todo: implement");
-        setTimeout(_ => { console.log("Countdown done.") }, 1000);
-        // this.state.connection.invoke('StartGame').catch(e => console.log("Error during starting game: ", e));
+        return new Promise(resolve => {
+            this.setState({ countdownIsOn: true }, async () => {
+                for (let i = milliseconds / 1000; i > 0; i--) {
+                    this.setState({ currentCountDown:  i});
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                resolve();
+            });
+        });
     }
 
     setBoard = async _ => await get("init", obj => 
-        this.setState({ rows: obj.rows, columns: obj.columns }));
+        this.setState({ rows: obj.rows, columns: obj.columns, mapDidInit: true }, () => this.initBoard()));
 
     changeDirection = e => {
+        e.stopPropagation();
+        if (!this.validKeyCode(e.keyCode)) return;
          this.state.connection.invoke('ChangeDirection', e.key);
     }
-    
-    snakeAteFood(obj) {
-        const { map } = this.state;
 
-    }
+    validKeyCode = code => code === 37 || code === 38 || code === 39 || code === 40
 
     updateSnakePosition(obj) {
         const { map, lastSquare } = this.state;
@@ -141,21 +146,35 @@ export default class Map extends Component {
         
     }
 
-    startGame() {
-        const { connection, connectionDidInit, mapDidInit } = this.state;
-        if (connection && connectionDidInit && mapDidInit) {
+    onGameOver() {
+        this.setState({ gameIsOn: false });
+    }
+
+    async startGame() {
+        const { connection } = this.state;
+        if (connection) {
+            this.setState({ gameIsOn: true });
+            await this.beginCountdown(3000);
             this.clearBoard();
-            connection.invoke('StartGame');
+            connection.invoke('StartGame')
+                .catch(err => {
+                    this.setState({ gameIsOn: false });
+                    console.warn("Couldnt start the game. Try to refresh your browser.");
+                });
         }
     }
     
     render() {
+
+        const { score, gameIsOn } = this.state;
 
         
         return <React.Fragment>
             
         <Appbar 
             startGame={this.startGame}
+            score={score}
+            gameIsOn={gameIsOn}
         />
 
         <GridContiner>  

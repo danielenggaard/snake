@@ -7,8 +7,9 @@ export async function get(route, callback) {
     http.open("GET", url)
     await http.send();
     http.onreadystatechange = _ => {
-        if (http.readyState === 4 && http.status === 200)
-        callback(JSON.parse(http.responseText));  
+        if (http.readyState === 4)
+            callback(JSON.parse(http.responseText));  
+        
     }  
 }
 
