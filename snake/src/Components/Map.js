@@ -5,7 +5,8 @@ import * as signalR from '@microsoft/signalr';
 import "./squareStyles.css";
 import Appbar from './AppBar';
 import GridContiner from './GridContainer';
-import { Typography } from '@material-ui/core';
+import { Typography, Box } from '@material-ui/core';
+import green from '@material-ui/core/colors/green';
 export default class Map extends Component {
 
     constructor(props) {
@@ -107,11 +108,12 @@ export default class Map extends Component {
 
     beginCountdown(milliseconds) {
         return new Promise(resolve => {
-            this.setState({ countdownIsOn: true }, async () => {
+            this.setState({ countdownIsOn: true, currentCountDown: milliseconds / 1000 }, async () => {
                 for (let i = milliseconds / 1000; i > 0; i--) {
                     this.setState({ currentCountDown:  i});
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
+                this.setState({ countdownIsOn: false });
                 resolve();
             });
         });
@@ -150,12 +152,32 @@ export default class Map extends Component {
         this.setState({ gameIsOn: false });
     }
 
+    renderCountdown() {
+        const { countdownIsOn, currentCountDown } = this.state;
+        if (countdownIsOn) {
+            return <Box 
+            style={{ boxSizing: "border-box" }}
+                        zIndex="10"
+                        position="absolute"
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        right="0"
+                        left="0"
+                        minHeight="98%"
+                        color={green[600]}
+                    >
+                    <Typography variant="h1">{currentCountDown}</Typography>
+                 </Box>
+        } 
+    }
+
     async startGame() {
         const { connection } = this.state;
         if (connection) {
-            this.setState({ gameIsOn: true });
-            await this.beginCountdown(3000);
+            this.setState({ gameIsOn: true, score: 0 });
             this.clearBoard();
+            await this.beginCountdown(3000);
             connection.invoke('StartGame')
                 .catch(err => {
                     this.setState({ gameIsOn: false });
@@ -170,6 +192,7 @@ export default class Map extends Component {
 
         
         return <React.Fragment>
+            {this.renderCountdown()}
             
         <Appbar 
             startGame={this.startGame}
@@ -181,8 +204,9 @@ export default class Map extends Component {
             <table
                 id="bob"
                 style={{
-                    width: '90vh',
-                    height: '90vh'
+                    width: '86vh',
+                    height: '86vh',
+                    margin: "8px"
                 }}>
                 <tbody>
                     {this.renderRows()}
