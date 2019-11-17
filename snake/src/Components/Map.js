@@ -30,6 +30,7 @@ export default class Map extends Component {
     componentDidMount() {
         this.setBoard();
         this.initNegotiation();
+        document.addEventListener("keypress", this.changeDirection);
         document.addEventListener("keydown", this.changeDirection);
     }
 
@@ -141,6 +142,9 @@ export default class Map extends Component {
         if (lastSquare)
             map[lastSquare.row][lastSquare.column].state = states.UNVISITED;
 
+        
+        const head = body.splice(0, 1)[0];
+        map[head.row][head.column].state = states.HEAD;
         body.forEach(body => {
             map[body.row][body.column].state = states.PATH;
         });

@@ -11,6 +11,11 @@ export default function GridContiner(props) {
             display="flex"
             justifyContent="center"
             alignContent="center"
+            position="absolute"
+            overflow="hidden"
+            top="0"
+            left="0"
+            marginTop="60px"
         >
             {props.children}
         </Box>
