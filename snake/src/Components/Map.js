@@ -93,7 +93,8 @@ export default class Map extends Component {
         connection.on('beginCountDown', countDown => this.beginCountdown(countDown));
         connection.on('updateSnake', e => this.updateSnakePosition(e));
         connection.on('updateScore', obj => this.updateScore(obj));
-        connection.on('gameOver', () => this.onGameOver())
+        connection.on('gameOver', () => this.onGameOver());
+        connection.on('gameWon', () => this.gameWon());
         connection.start()
             .catch(err => console.log("Establishing connection to server failed."));
     }
@@ -152,6 +153,12 @@ export default class Map extends Component {
         
     }
 
+    gameWon() {
+        const { score } = this.state;
+        alert("Congrats you won the snake with a score of " + score + " points.");
+        this.setState({ gameIsOn: false });
+    }
+
     onGameOver() {
         this.setState({ gameIsOn: false });
     }
@@ -178,7 +185,7 @@ export default class Map extends Component {
 
     async startGame() {
         const { connection } = this.state;
-        if (connection) {
+        if (connection && connection.receivedHandshakeResponse) {
             this.setState({ gameIsOn: true, score: 0 });
             this.clearBoard();
             await this.beginCountdown(3000);
@@ -187,6 +194,10 @@ export default class Map extends Component {
                     this.setState({ gameIsOn: false });
                     console.warn("Couldnt start the game. Try to refresh your browser.");
                 });
+        } else {
+            console.warn("Cannot connect to the server. The server might be down.");
+            this.setBoard();
+            await this.initNegotiation();
         }
     }
     
