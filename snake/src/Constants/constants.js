@@ -1,5 +1,5 @@
 
-export const apiBaseUrl = "https://localhost:5001/"; 
+export const apiBaseUrl = "https://snakegameapi.azurewebsites.net/game"; 
 export const hubPath = `${apiBaseUrl}game`   // todo: change for production
 
 export const states = {
