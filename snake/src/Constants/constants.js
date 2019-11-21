@@ -1,6 +1,6 @@
 
-export const apiBaseUrl = "https://snakegameapi.azurewebsites.net/game"; 
-export const hubPath = `${apiBaseUrl}game`   // todo: change for production
+export const apiBaseUrl = "https://snakegameapi.azurewebsites.net/"; 
+export const hubPath = `${apiBaseUrl}game`;
 
 export const states = {
     UNVISITED: 1,
