@@ -1,3 +1,5 @@
-Still in production.
+__Snake Game__
 
-https://danielenggaard.github.io/snake/
+The worldst most laggy realtime snake game. God bless free Azure subscriptions.
+
+URL: https://danielenggaard.github.io/snake/
